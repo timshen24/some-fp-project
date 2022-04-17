@@ -6,7 +6,7 @@ import fpfinal.app.Configuration.{AppOp, readEnv}
 import fpfinal.app.Syntax._
 
 object App {
-  val ME = MonadError[AppOp, String]
+  val ME: MonadError[AppOp, String] = MonadError[AppOp, String]
 
   def run(): AppOp[Unit] = {
     def printOptions: AppOp[Unit] = {
