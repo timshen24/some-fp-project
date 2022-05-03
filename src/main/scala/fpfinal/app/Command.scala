@@ -57,7 +57,15 @@ object AddExpenseCommand extends Command {
       *
       * Extra points: implement it using ME.tailRecM
       */
-    def readParticipants(): AppOp[List[String]] = ???
+    def readParticipants(): AppOp[List[String]] = {
+      val msg = s"Enter name of participant (or END to finish): "
+      ME.tailRecM(List[String]()) { (xs: List[String]) =>
+        for {
+          env <- readEnv
+          p <- env.console.readLine(msg).toAppOp
+        } yield if (p === "END") Right(xs) else Left(p :: xs)
+      }
+    }
 
     /**
       * TODO: Use the helper functions in common.Validations and return a validated
@@ -70,7 +78,14 @@ object AddExpenseCommand extends Command {
         payer: String,
         amount: String,
         participants: List[String]
-    ): IsValid[AddExpenseData] = ???
+    ): IsValid[AddExpenseData] = {
+      (nonEmptyString(payer),
+      double(amount),
+      participants.traverse(nonEmptyString)
+      ).mapN { (p, a, ps) =>
+        AddExpenseData(p, a, ps)
+      }
+    }
 
     def readData(): AppOp[AddExpenseData] = {
       for {
@@ -90,8 +105,14 @@ object AddExpenseCommand extends Command {
       * Option[Person]).
       */
     def findPerson(name: String): AppOp[Person] = {
-      lazy val msg = s"Person not found: $name"
-      ???
+      for {
+        env <- readEnv
+        person <-
+          env.personService
+            .findByName(name)
+            .toAppOp
+            .flatMap(p => ME.fromOption(p, s"Person not found: ${name}"))
+      } yield person
     }
 
     for {
@@ -134,7 +155,12 @@ case object AddPersonCommand extends Command {
       *
       * Upon successful completion, return the message 'Person created successfully'.
       */
-    ???
+    for {
+      env <- readEnv
+      data <- readData()
+      person <- Person.create(data.name).toAppOp
+      _ <- env.personService.addPerson(person).toAppOp
+    } yield "Person created successfully"
   }
 }
 

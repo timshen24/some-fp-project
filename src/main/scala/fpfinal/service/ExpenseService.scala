@@ -4,6 +4,7 @@ import cats._
 import cats.data._
 import cats.implicits._
 import fpfinal.model.{DebtByPayer, Expense}
+import fpfinal.service.ExpenseService.ExpenseOp
 
 trait ExpenseService {
   import ExpenseService._
@@ -50,4 +51,13 @@ object ExpenseService {
   *
   * Check the tests for a concrete example.
   */
-// trait LiveExpenseService...
+trait LiveExpenseService extends ExpenseService {
+  override val expenseService: Service = new Service {
+    override def addExpense(expense: Expense): ExpenseOp[Expense] =
+      State (s => (s.addExpense(expense), expense))
+
+    override def computeDebt(): ExpenseOp[DebtByPayer] = {
+      State.inspect(_.expenses.foldMap(DebtByPayer.fromExpense).simplified)
+    }
+  }
+}

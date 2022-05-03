@@ -50,4 +50,5 @@ class ExpenseSpec extends FpFinalSpec {
   }
 
   // Typeclass instances tests here...
+  checkAll("Eq[Expense]", EqTests[Expense].eqv)
 }

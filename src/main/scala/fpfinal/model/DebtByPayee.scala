@@ -8,12 +8,12 @@ class DebtByPayee private (val debtByPayee: Map[Person, Money]) {
   /**
     * TODO: Return the debt for this payee
     */
-  def debtForPayee(person: Person): Option[Money] = ???
+  def debtForPayee(person: Person): Option[Money] = debtByPayee.get(person)
 
   /**
     * TODO: Return all the payees as a list
     */
-  def allPayees(): List[Person] = ???
+  def allPayees(): List[Person] = debtByPayee.keys.toList
 }
 
 object DebtByPayee {
@@ -24,7 +24,14 @@ object DebtByPayee {
     * TODO: Create a DebtByPayee instance using the information from this Expense.
     * Each participant should get the same debt to the payer.
     */
-  def fromExpense(expense: Expense): DebtByPayee = ???
+  def fromExpense(expense: Expense): DebtByPayee = {
+    val m: Map[Person, Money] = expense.participants.map(p => (p, expense.amountByParticipant)).foldLeft(Map[Person, Money]()) {
+      case (b: Map[Person, Money], (p, m)) => b + (p -> m)
+    }
+    new DebtByPayee(m)
+  }
+
+  def singleton(person: Person, money: Money): DebtByPayee = new DebtByPayee(Map(person -> money))
 
   /**
     * TODO: Implement an eq instance and their corresponding tests.
@@ -32,7 +39,7 @@ object DebtByPayee {
     */
   implicit def eqDebtByPayee(implicit
       eqMap: Eq[Map[Person, Money]]
-  ): Eq[DebtByPayee] = ???
+  ): Eq[DebtByPayee] = Eq.instance((d1, d2) => d1.debtByPayee === d2.debtByPayee)
 
   /**
     * TODO: Implement a monoid instance.
@@ -42,7 +49,11 @@ object DebtByPayee {
     */
   implicit def monoidDebtByPayee(implicit
       monoidMap: Monoid[Map[Person, Money]]
-  ): Monoid[DebtByPayee] = ???
+  ): Monoid[DebtByPayee] = new Monoid[DebtByPayee] {
+    override def empty: DebtByPayee = new DebtByPayee(Map.empty[Person, Money])
+
+    override def combine(x: DebtByPayee, y: DebtByPayee): DebtByPayee = new DebtByPayee(x.debtByPayee |+| y.debtByPayee)
+  }
 
   implicit def showDebtByPayee(implicit
       personShow: Show[Person],

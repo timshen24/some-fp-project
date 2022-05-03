@@ -21,7 +21,7 @@ trait LiveController extends Controller {
       ExitCommand
     )
 
-  override val controller = new Service {
+  override val controller: Service = new Service {
     override def getCommandByNumber(number: Int): Option[Command] =
       Try(allCommands(number)).toOption
 

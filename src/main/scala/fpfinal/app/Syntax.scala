@@ -24,7 +24,14 @@ object Syntax {
       * Make sure the resulting AppState contains the PersonState
       * from this PersonOp.
       */
-    def toAppOp: AppOp[A] = ???
+    def toAppOp: AppOp[A] = {
+      val st: St[A] =
+        StateT { appState =>
+          val (faS, faA) = fa.run(appState.personState).value
+          (appState.copy(personState = faS), faA).pure[ErrorOr]
+        }
+      ReaderT.liftF(st)
+    }
   }
 
   implicit class ValidOps[A](fa: IsValid[A]) {

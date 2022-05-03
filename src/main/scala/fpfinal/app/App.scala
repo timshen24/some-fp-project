@@ -55,7 +55,11 @@ object App {
       *
       * The app should be able to continue normal execution afterwards.
       */
-    def executeCommandWithRecovery: AppOp[Boolean] = ???
+    def executeCommandWithRecovery: AppOp[Boolean] = ME.handleErrorWith(executeCommand)(error =>
+      readEnv.flatMap(env =>
+        env.console.printLine(s"\n$error\n").as(false).toAppOp
+      )
+    )
 
     ME.iterateUntil(executeCommandWithRecovery)(identity).void
   }

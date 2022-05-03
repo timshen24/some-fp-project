@@ -12,12 +12,17 @@ class Money private (_cents: Int) {
   def cents: Int = _cents
   def dollars: Double = _cents / 100.0
   def plus(other: Money): Money = new Money(_cents + other.cents)
+  def minus(other: Money): Money = new Money(_cents - other.cents)
+  def times(n: Int): Money = new Money(_cents * n)
 
   /**
     * TODO: Implement division by an integer. When n is 0, the result should be None.
     * Otherwise, it should be a Some.
     */
-  def divideBy(n: Int): Option[Money] = ???
+  def divideBy(n: Int): Option[Money] =
+    Option.when(n != 0) {
+      new Money(_cents / n)
+    }
 
   override def toString: String = showMoney.show(this)
 }
@@ -32,7 +37,8 @@ object Money {
     * The only validation to perform is:
     * - Amount should be non-negative
     */
-  def dollars(amount: Double): IsValid[Money] = ???
+  def dollars(amount: Double): IsValid[Money] =
+    nonNegative(amount).map(d => new Money((d * 100).toInt))
 
   implicit val monoidMoney: Monoid[Money] = Monoid.instance(zero, _ plus _)
 
@@ -45,5 +51,6 @@ object Money {
     * TODO: Implement and instance of Order for Money that compares its cents.
     * We should we able to use any Order[Int] we provide as an implicit parameter.
     */
-  implicit def orderMoney = ???
+  implicit def orderMoney(implicit ord: Order[Int]): Order[Money] =
+    (x: Money, y: Money) => ord.compare(x.cents, y.cents)
 }

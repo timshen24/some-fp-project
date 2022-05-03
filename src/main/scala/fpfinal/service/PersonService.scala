@@ -4,6 +4,7 @@ import cats._
 import cats.data._
 import cats.implicits._
 import fpfinal.model.Person
+import fpfinal.service.PersonService.PersonOp
 
 trait PersonService {
   import PersonService._
@@ -44,4 +45,15 @@ object PersonService {
   *
   * getAllPeople returns a list with all the people in the state.
   */
-// trait LivePersonService...
+trait LivePersonService extends PersonService {
+  override val personService: Service = new Service {
+    override def findByName(name: String): PersonOp[Option[Person]] =
+      State(s => (s, s.personByName.get(name)))
+
+    override def addPerson(person: Person): PersonOp[Unit] =
+      State.modify(s => s.addPerson(person))
+
+    override def getAllPeople(): PersonOp[List[Person]] =
+      State(s => (s, s.personByName.values.toList))
+  }
+}

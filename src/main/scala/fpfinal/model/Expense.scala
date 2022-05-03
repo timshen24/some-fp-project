@@ -18,7 +18,7 @@ class Expense private (
     * TODO: Divide this amount accross the payer and the participants so each
     * has the same debt for this expense
     */
-  def amountByParticipant: Money = ???
+  def amountByParticipant: Money = amount.divideBy(participants.length + 1).getOrElse(Money.zero)
 }
 
 object Expense {
@@ -45,19 +45,29 @@ object Expense {
       payer: Person,
       amount: Money,
       participants: List[Person]
-  )(implicit eqPerson: Eq[Person]): IsValid[Expense] = ???
+  )(implicit eqPerson: Eq[Person]): IsValid[Expense] = {
+    (nonEmptySet(participants),
+      Validated.condNec(
+        Foldable[List].forall(participants)(_.neqv(payer)),
+        payer, "payer cannot be included in participants"
+      )
+      ).mapN((ps, p) => new Expense(p, amount, ps))
+  }
 
   /**
     * TODO: Implement an Eq instance by comparing every field.
     * Parameterize it so that we can pass definitions of Eq for
     * each of the types we need to compare (i.e.: Person, Money, NonEmptySet[Person]).
     */
-  implicit def eqExpense = ???
+  implicit def eqExpense(implicit eqPerson: Eq[Person], eqMoney: Eq[Money]): Eq[Expense] =
+    Eq.instance(
+      (ex1, ex2) => ex1.payer === ex2.payer && ex1.amount === ex2.amount && ex1.participants === ex2.participants
+    )
 
   /**
     * TODO: Implement a Show instance with the following format:
     *
     * Expense[Payer=Martin,Amount=$10.00,Participants=Bob,Susan]
     */
-  implicit val showExpense: Show[Expense] = ???
+  implicit val showExpense: Show[Expense] = Show.show(expense => s"Expense[Payer=${expense.payer},Amount=${expense.amount.show},Participants=${expense.participants.mkString_(",")}]")
 }
