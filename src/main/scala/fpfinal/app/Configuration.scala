@@ -21,4 +21,10 @@ object Configuration {
     with LiveController
   type AppOp[A] = ReaderT[St, Environment, A] // stands for Kleisli(Environment => St[A])
   def readEnv: AppOp[Environment] = ReaderT.ask[St, Environment]
+
+  def main(args: Array[SuccessMsg]): Unit = {
+    val runVal: Either[Error, (AppState, Environment)] = readEnv.run(liveEnv).run(AppState.empty).value.run
+    val tuple: (AppState, Environment) = runVal.getOrElse((AppState.empty, liveEnv))
+    println(tuple._2.console.printLine("hello world").run)
+  }
 }
