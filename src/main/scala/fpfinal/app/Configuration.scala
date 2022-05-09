@@ -4,6 +4,9 @@ import cats.data._
 import fpfinal.common.IO
 import fpfinal.service._
 
+/**
+ * Common types and values used throughout the application.
+ */
 object Configuration {
   type IsValid[A] = Validated[NonEmptyChain[String], A]
   type Error = String
