@@ -44,6 +44,7 @@ object Syntax {
       val st: St[A] =
         StateT { appState =>
           val (faS, faA) = fa.run(appState.personState).value
+          // StateT apply method must be (S, A) here instead of A
           (appState.copy(personState = faS), faA).pure[ErrorOr]
         }
       ReaderT.liftF(st)
@@ -65,7 +66,8 @@ object Syntax {
       val mergedValidations: Either[Error, A] = fa.toEither.leftMap { errors =>
         s"""Errors: ${errors.mkString_("[", ", ", "]")}"""
       }
-      val errorOr: ErrorOr[A] = EitherT.fromEither(mergedValidations)
+      // add a quote below:
+      val errorOr: ErrorOr[A] = EitherT.fromEither/*[IO]*/(mergedValidations)
       val st: St[A] = StateT.liftF(errorOr)
       ReaderT.liftF(st)
     }
