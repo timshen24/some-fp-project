@@ -53,7 +53,7 @@ object ExitCommand extends Command {
 object AddExpenseCommand extends Command {
   val name = "Add expense"
 
-  implicit val ME = MonadError[AppOp, String]
+  implicit val ME: MonadError[AppOp, SuccessMsg] = MonadError[AppOp, String]
 
   case class AddExpenseData(
       payer: String,
@@ -128,6 +128,8 @@ object AddExpenseCommand extends Command {
       * handling translation between types and converting None results to errors
       * using the provided message (notice the return type is Person, and not
       * Option[Person]).
+      *
+      * Hint: Use ME.fromOption
       */
     def findPerson(name: String): AppOp[Person] = {
       for {
@@ -136,7 +138,7 @@ object AddExpenseCommand extends Command {
           env.personService
             .findByName(name)
             .toAppOp
-            .flatMap(p => ME.fromOption(p, s"Person not found: ${name}"))
+            .flatMap(p => ME.fromOption(p, s"Person not found: $name"))
       } yield person
     }
 
@@ -217,7 +219,7 @@ case object ListAllPeopleCommand extends Command {
   override def execute(): AppOp[SuccessMsg] = {
     for {
       env    <- readEnv
-      people <- env.personService.getAllPeople().toAppOp
+      people <- env.personService.getAllPeople.toAppOp
       _      <- env.console.printLine(
                     s"""List of people:
                      |${people.map(p => s"- ${p.show}").mkString("\n")}""".stripMargin

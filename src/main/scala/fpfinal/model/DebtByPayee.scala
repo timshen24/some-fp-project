@@ -54,8 +54,6 @@ object DebtByPayee {
     new DebtByPayee(m)
   }
 
-  def singleton(person: Person, money: Money): DebtByPayee = new DebtByPayee(Map(person -> money))
-
   /**
    * Creates an instance of DebtByPayee with exactly one payee and their debt.
    *
