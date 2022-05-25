@@ -22,10 +22,11 @@ object Validations {
     * TODO #2: Turn this String into a validated double
     */
   def double(s: String): IsValid[Double] =
-    Try(s.toDouble) match {
-      case Failure(exception) => exception.getMessage.invalidNec[Double]
-      case Success(value) => value.validNec[String]
-    }
+    Validated.fromOption(s.toDoubleOption, NonEmptyChain("Invalid double"))
+//    Try(s.toDouble) match {
+//      case Failure(exception) => exception.getMessage.invalidNec[Double]
+//      case Success(value) => value.validNec[String]
+//    }
 
   /**
    * Validates that a Double is >= 0
