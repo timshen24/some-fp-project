@@ -9,7 +9,6 @@ import scala.util.{Failure, Success, Try}
 trait IO[+A] {
   import IO._
 
-  @tailrec
   private def runWithEH[AA >: A](eh: Option[ErrorHandler[AA]]): AA = {
     resume(this, eh) match {
       case Right(a) => a

@@ -47,7 +47,7 @@ class PersonServiceSpec extends FpFinalSpec {
   test("getAllPeople contains all people") {
     forAll { (initialState: PersonState) =>
       val (resultState, resultPeople) = service
-        .getAllPeople()
+        .getAllPeople
         .run(initialState)
         .value
       assert(
